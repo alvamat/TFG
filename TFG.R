@@ -67,6 +67,15 @@ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 
-#Cluster con picos m·s poblados
+#Cluster con picos m√°s poblados
 sort(table(Cluster4$Datos.Industry))
+
+
+#Creamos una tabla
+ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
+                         Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
+                         Datos$Segment, Datos$Area, Datos$Product.Description,Datos$Base.Rate.Nominal,
+                         Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal);
+
+ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
 
