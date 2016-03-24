@@ -4,21 +4,39 @@ library(fpc)
 library(Rmixmod)
 library(ggplot2)
 library(cluster)
+library(xlsx)
 #Programa para la lectura de datos csv en R
 
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
 
 Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
 
+
+
+#creamos un fichero para saber que producto tiene cada valor
+Datose<-data.frame(Datos$Product.Description)
+
+Datose$Datos.Product.Description<-as.numeric(Datose$Datos.Product.Description)
+
+excel<-data.frame(Datos$Product.Description, Datose$Datos.Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
+excel <- excel[!duplicated(excel[,c('Datos.Product.Description')]),] 
+
+write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
+           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+
+
+
+
 #we are going to select only a few variables
 clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
                       Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
-                      Datos$Segment, Datos$Area)
-clients <- unique(clients)
+                      Datos$Segment, Datos$Area, Datos$Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
+#clients <- unique(clients)
 rowsOK <- complete.cases(clients)
 clients <- clients[rowsOK,]
-clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),]
-clients <- filter(clients, Datos.Risk.Country=="BRAZIL");
+#clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
+#duplicado, lo que nos interesa son todas sus paquetes bancarios
+clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
 
 
 
@@ -28,13 +46,15 @@ clients$Datos.Industry<-as.numeric(clients$Datos.Industry)
 clients$Datos.Area<-as.numeric(clients$Datos.Area)
 clients$Datos.Profit.Center.Area<-as.numeric(clients$Datos.Profit.Center.Area)
 clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
+clients$Datos.Product.Description<-as.numeric(clients$Datos.Product.Description)
 
+#hacemos los clusters
 dat<-select(clients, Datos.Profit.Center.Area,Datos.Customer.Type, Datos.Line.Of.Business, 
-            Datos.Industry, Datos.Profit.Center.Area, Datos.Segment)
+            Datos.Industry, Datos.Profit.Center.Area, Datos.Segment, Datos.Product.Description)
 
 dat<-scale(dat)
 
-set.seed(33)
+set.seed(3)
 numcenters = 4;
 ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
 #with(clients, pairs(dat, col=c(1:20)[ClusterKmeans$cluster])) 
@@ -66,7 +86,34 @@ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 
+#Detectar cluster más poblado
+Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==1),]))
+ClusterImportante<-data.frame(clients[(ClusterKmeans$cluster==1),])
+
+for(i in 1:numcenters)
+  {
+ if(Vectormayor<=nrow(data.frame(clients[(ClusterKmeans$cluster==i),])))
+   {
+  Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==i),]));
+  ClusterImportante<-data.frame(clients[(ClusterKmeans$cluster==i),]);
+  }
+}
+
+#UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
 
 #Cluster con picos más poblados
-sort(table(Cluster4$Datos.Industry))
+sort(table(ClusterImportante$Datos.Product.Description))
+
+
+#Creamos una tabla
+#ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
+                         #Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
+                         #Datos$Segment, Datos$Area, Datos$Product.Description,Datos$Base.Rate.Nominal,
+                         #Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal);
+
+#for(i=)
+#ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
+
+
+
 
