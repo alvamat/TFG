@@ -1,0 +1,116 @@
+library(lattice)
+library(dplyr)
+library(fpc)
+library(Rmixmod)
+library(ggplot2)
+library(cluster)
+library(xlsx)
+#Programa para la lectura de datos csv en R
+
+#Empezamos leyendo el documento del cual vamos a extraer los datos:
+
+Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
+
+#we are going to select only a few variables
+clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
+                      Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
+                      Datos$Segment, Datos$Area, Datos$Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
+#clients <- unique(clients)
+rowsOK <- complete.cases(clients)
+clients <- clients[rowsOK,]
+#clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
+#duplicado, lo que nos interesa son todas sus paquetes bancarios
+clients <- filter(clients, Datos.Risk.Country=="BRAZIL");
+
+clientes<-clients;
+
+clientes$Datos.Customer.Type<-as.numeric(clients$Datos.Customer.Type)
+clientes$Datos.Line.Of.Business<-as.numeric(clients$Datos.Line.Of.Business)
+clientes$Datos.Industry<-as.numeric(clients$Datos.Industry)
+clientes$Datos.Area<-as.numeric(clients$Datos.Area)
+clientes$Datos.Profit.Center.Area<-as.numeric(clients$Datos.Profit.Center.Area)
+clientes$Datos.Segment<-as.numeric(clients$Datos.Segment)
+clientes$Datos.Product.Description<-as.numeric(clients$Datos.Product.Description)
+
+#creamos un fichero para saber que producto tiene cada valor
+excel<-data.frame(clients$Datos.Product.Description, clientes$Datos.Product.Description, clients$Datos.Spread.Rate.Nominal, clients$Datos.Total.Rate.Nominal)
+excel <- excel[!duplicated(excel[,c('clients.Datos.Product.Description')]),] 
+
+write.xlsx(excel, "hola.xlsx", sheetName="Sheet1",
+           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+
+
+
+
+dat<-select(clientes, Datos.Profit.Center.Area,Datos.Customer.Type, Datos.Line.Of.Business, 
+            Datos.Industry, Datos.Profit.Center.Area, Datos.Segment, Datos.Product.Description)
+
+dat<-scale(dat)
+
+set.seed(33)
+numcenters = 4;
+ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
+#with(clients, pairs(dat, col=c(1:20)[ClusterKmeans$cluster])) 
+
+#plotcluster(dat, clients$cluster)
+#clusplot(dat, ClusterKmeans$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+
+Cluster1 <- data.frame(clients[(ClusterKmeans$cluster==1),])
+Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
+Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
+Cluster4 <- data.frame(clients[(ClusterKmeans$cluster==4),])
+
+clients_plot <- clients
+
+levelsIndustry <-
+  levels(clients_plot$Datos.Industry)[-50][-49][-48]
+
+
+#png(file="plot9.png")
+
+ggplot(Cluster1,aes(Datos.Industry)) +
+  geom_freqpoly(data=Cluster1,color = "green", alpha = 1)+
+  geom_freqpoly(data=Cluster2,color = "red", alpha = 1)+
+  geom_freqpoly(data=Cluster3,color = "black", alpha = 1)+
+  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1)+
+  scale_x_discrete(breaks=1:length(levelsIndustry),
+                   labels=levelsIndustry)+
+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+#Detectar cluster más poblado
+Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==1),]))
+ClusterImportante<-data.frame(clients[(ClusterKmeans$cluster==1),])
+
+for(i in 1:numcenters)
+  {
+ if(Vectormayor<=nrow(data.frame(clients[(ClusterKmeans$cluster==i),])))
+   {
+  Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==i),]));
+  ClusterImportante<-data.frame(clients[(ClusterKmeans$cluster==i),]);
+  numero<-i
+  }
+}
+
+UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
+
+#Cluster con picos más poblados
+sort(table(ClusterImportante$Datos.Product.Description))
+
+
+#Creamos una tabla
+ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
+                         Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
+                         Datos$Segment, Datos$Area, Datos$Product.Description,Datos$Base.Rate.Nominal,
+                         Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal);
+
+ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
+
+#Upselling
+#Cogemos el Cluster y miramos si el el producto más poblado es también el que tiene
+#más spread.rate. Sinó debemos hacer un Up-selling al que tenga más spread.rate
+ClusterImportante$Datos.Product.Description<-as.character(ClusterImportante$Datos.Product.Description)
+
+
+
