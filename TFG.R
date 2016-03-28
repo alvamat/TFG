@@ -36,7 +36,7 @@ rowsOK <- complete.cases(clients)
 clients <- clients[rowsOK,]
 #clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
 #duplicado, lo que nos interesa son todas sus paquetes bancarios
-clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
+clients <- filter(clients, Datos.Risk.Country=="BRAZIL");
 
 
 
@@ -49,13 +49,13 @@ clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
 clients$Datos.Product.Description<-as.numeric(clients$Datos.Product.Description)
 
 #hacemos los clusters
-dat<-select(clients, Datos.Profit.Center.Area,Datos.Customer.Type, Datos.Line.Of.Business, 
-            Datos.Industry, Datos.Profit.Center.Area, Datos.Segment, Datos.Product.Description)
+dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business, 
+            Datos.Industry, Datos.Segment, Datos.Product.Description,Datos.Profit.Center.Area)
 
 dat<-scale(dat)
 
 set.seed(3)
-numcenters = 4;
+numcenters = 5;
 ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
 #with(clients, pairs(dat, col=c(1:20)[ClusterKmeans$cluster])) 
 
@@ -66,6 +66,11 @@ Cluster1 <- data.frame(clients[(ClusterKmeans$cluster==1),])
 Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
 Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
 Cluster4 <- data.frame(clients[(ClusterKmeans$cluster==4),])
+Cluster5 <- data.frame(clients[(ClusterKmeans$cluster==5),])
+Cluster6 <- data.frame(clients[(ClusterKmeans$cluster==6),])
+Cluster7 <- data.frame(clients[(ClusterKmeans$cluster==7),])
+Cluster8 <- data.frame(clients[(ClusterKmeans$cluster==8),])
+Cluster9 <- data.frame(clients[(ClusterKmeans$cluster==9),])
 
 clients_plot <- clients
 
@@ -80,6 +85,11 @@ ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster2,color = "red", alpha = 1)+
   geom_freqpoly(data=Cluster3,color = "black", alpha = 1)+
   geom_freqpoly(data=Cluster4,color = "blue", alpha = 1)+
+  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1)+
+  geom_freqpoly(data=Cluster6,color = "pink", alpha = 1)+
+  geom_freqpoly(data=Cluster7,color = "orange", alpha = 1)+
+  geom_freqpoly(data=Cluster8,color = "brown", alpha = 1)+
+  geom_freqpoly(data=Cluster9,color = "black", alpha = 1)+
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
 theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -102,7 +112,7 @@ for(i in 1:numcenters)
 #UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
 
 #Cluster con picos más poblados
-sort(table(ClusterImportante$Datos.Product.Description))
+Productos_cluster<-sort(table(ClusterImportante$Datos.Product.Description))
 
 
 #Creamos una tabla
@@ -114,6 +124,22 @@ sort(table(ClusterImportante$Datos.Product.Description))
 #for(i=)
 #ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
 
+#NumPrd variable que contiene cuantos productos parecidos hay
+#hay que guardar en un data.frame las empresas que solo tienen
+#los productos por debajo del mejor
 
+#Up-selling
+#Si(NUmPrd >=2){
+ 
+#}
+
+
+
+#Cross-selling
+#if(NUmPrd = 0){
+ #comprobar que empresas del producto más poblado no tienen los dos siguientes
+
+ #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+#}
 
 
