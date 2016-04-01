@@ -36,7 +36,7 @@ rowsOK <- complete.cases(clients)
 clients <- clients[rowsOK,]
 #clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
 #duplicado, lo que nos interesa son todas sus paquetes bancarios
-clients <- filter(clients, Datos.Risk.Country=="BRAZIL");
+clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
 
 
 
@@ -50,7 +50,7 @@ clients$Datos.Product.Description<-as.numeric(clients$Datos.Product.Description)
 
 #hacemos los clusters
 dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business, 
-            Datos.Industry, Datos.Segment, Datos.Product.Description,Datos.Profit.Center.Area)
+            Datos.Industry, Datos.Segment, Datos.Product.Description,Datos.Profit.Center.Area,Datos.Area)
 
 dat<-scale(dat)
 
@@ -112,7 +112,7 @@ for(i in 1:numcenters)
 #UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
 
 #Cluster con picos más poblados
-Productos_cluster<-sort(table(ClusterImportante$Datos.Product.Description))
+Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Description)))
 
 
 #Creamos una tabla
@@ -130,13 +130,14 @@ Productos_cluster<-sort(table(ClusterImportante$Datos.Product.Description))
 
 #Up-selling
 #Si(NUmPrd >=2){
- 
+ #haria una recomendación para que los clientes que tienen
+  #el producto con un mayor spread.rate
 #}
 
 
 
 #Cross-selling
-#if(NUmPrd = 0){
+#if(NUmPrd < 2){
  #comprobar que empresas del producto más poblado no tienen los dos siguientes
 
  #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
