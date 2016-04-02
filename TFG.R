@@ -121,7 +121,7 @@ Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Descrip
                          #Datos$Segment, Datos$Area, Datos$Product.Description,Datos$Base.Rate.Nominal,
                          #Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal);
 
-#for(i=)
+#for(i in )
 #ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
 
 #NumPrd variable que contiene cuantos productos parecidos hay
@@ -129,18 +129,45 @@ Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Descrip
 #los productos por debajo del mejor
 
 #Up-selling
-#Si(NUmPrd >=2){
- #haria una recomendación para que los clientes que tienen
-  #el producto con un mayor spread.rate
+#if(NumPrd >=2){
+  #for(i in 1:length(Producto1)){
+  #haria una recomendación para que los clientes que tienen
+    #if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
+    # up_sellings$Datos.Customer.Code[i]<-Producto2_Clientes$Datos.Customer.Code[i];
+    # up_sellings$Datos.Customer.Code[i+length(Productos_Cliente2)]<-Producto3_Clientes$Datos.Customer.Code[i];
+    # }
+    #el producto con un mayor spread.rate
+    frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
+    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+    #excel<-data.frame(frase1,P1,P2, up_sellings$Datos.Customer.Code,)
+    #excel <- excel[!duplicated(excel[,c('up_selling$Datos.Customer.Code')]),] 
+    
+    #write.xlsx(excel, "Empresas_aplicar_UpSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+    
+    
 #}
 
 
 
 #Cross-selling
 #if(NUmPrd < 2){
- #comprobar que empresas del producto más poblado no tienen los dos siguientes
+  #for(i in 1:length(Producto1)){
+    #comprobar que empresas del producto más poblado no tienen los dos siguientes
+    #if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
+    # Cross_Selling$Datos.Customer.Code[i]<-Producto1_Clientes$Datos.Customer.Code[i];
+    # }
 
- #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+
+
+    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+    #excel<-data.frame(Cross_Selling$Datos.Customer.Code,)
+    #excel <- excel[!duplicated(excel[,c('Datos.Customer.Code')]),] 
+    
+    #write.xlsx(excel, "Empresas_aplicar_CrSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+    
+    
+    
+  #}
 #}
 
 
