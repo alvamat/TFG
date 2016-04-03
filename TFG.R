@@ -114,7 +114,7 @@ for(i in 1:numcenters)
 #Cluster con picos más poblados
 Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Description)))
 
-
+#############
 #Creamos una tabla
 #ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
                          #Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
@@ -123,10 +123,27 @@ Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Descrip
 
 #for(i in )
 #ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
+############
+
+
+
+
 
 #NumPrd variable que contiene cuantos productos parecidos hay
+Numprd=matrix(0,nrow = length(Vectprd),ncol = 2)
 #hay que guardar en un data.frame las empresas que solo tienen
 #los productos por debajo del mejor
+for(i in 1:length(Vectprd)){
+  if(Vectprd[i]==L1[:]){#que podemos hacer para recorrer todo el vector sin saber cuantos valores hay?
+    Numprd[1,1]=Numprd[1,1]+1;
+  }
+  if(Vectprd[i]==L2[:]){
+    Numprd[1,1]=Numprd[1,1]+1;
+  }
+  #para todos los vecotores hay que hacer lo mismo
+}
+
+
 
 #Up-selling
 #if(NumPrd >=2){
