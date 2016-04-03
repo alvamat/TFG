@@ -68,8 +68,8 @@ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 #Cluster con picos más poblados
-sort(table(Cluster4$Datos.Industry))
-
+tblcl<-table(Cluster4$Datos.Industry)
+(tblcl<-tblcl[order(as.numeric(names(tblcl)))])
 
 #Creamos una tabla
 ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
