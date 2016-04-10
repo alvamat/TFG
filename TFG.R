@@ -9,17 +9,24 @@ library(xlsx)
 
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
 
+
 Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
 
-
+#rowsOK <- complete.cases #elimina filas con Na's
+#Datos <- Datos[rowsOK,]
 
 #creamos un fichero para saber que producto tiene cada valor
-Datose<-data.frame(Datos$Product.Description)
+Datose<-data.frame(Datos$Product.Description, Datos$Spread.Rate.Nominal)
+Datose$Datos.Product.Description1<-as.numeric(Datose$Datos.Product.Description)
 
-Datose$Datos.Product.Description<-as.numeric(Datose$Datos.Product.Description)
+excel<-aggregate( formula = Datos.Spread.Rate.Nominal~Datos.Product.Description+Datos.Product.Description1, 
+           data = Datose,
+           FUN = mean );
 
-excel<-data.frame(Datos$Product.Description, Datose$Datos.Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
-excel <- excel[!duplicated(excel[,c('Datos.Product.Description')]),] 
+
+
+#excel<-data.frame(excel, Datose$Datos.Product.Description)
+#excel <- excel[!duplicated(excel[,c('Datos.Product.Description')]),] 
 
 write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
@@ -32,13 +39,10 @@ clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Busi
                       Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
                       Datos$Segment, Datos$Area, Datos$Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
 #clients <- unique(clients)
-rowsOK <- complete.cases(clients)
-clients <- clients[rowsOK,]
+#rowsOK <- complete.cases(clients)
+#clients <- clients[rowsOK,]
 #clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
 #duplicado, lo que nos interesa son todas sus paquetes bancarios
-clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
-
-
 
 clients$Datos.Customer.Type<-as.numeric(clients$Datos.Customer.Type)
 clients$Datos.Line.Of.Business<-as.numeric(clients$Datos.Line.Of.Business)
@@ -46,11 +50,18 @@ clients$Datos.Industry<-as.numeric(clients$Datos.Industry)
 clients$Datos.Area<-as.numeric(clients$Datos.Area)
 clients$Datos.Profit.Center.Area<-as.numeric(clients$Datos.Profit.Center.Area)
 clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
-clients$Datos.Product.Description<-as.numeric(clients$Datos.Product.Description)
+clients$Datos.Product.Description<-(Datose$Datos.Product.Description1)
+
+
+clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
+
+
+
+
 
 #hacemos los clusters
 dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business, 
-            Datos.Industry, Datos.Segment, Datos.Product.Description,Datos.Profit.Center.Area,Datos.Area)
+            Datos.Industry, Datos.Segment, Datos.Profit.Center.Area,Datos.Area)
 
 dat<-scale(dat)
 
@@ -111,8 +122,11 @@ for(i in 1:numcenters)
 
 #UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
 
-#Cluster con picos más poblados
-Productos_cluster<-data.frame(sort(table(ClusterImportante$Datos.Product.Description)))
+#Cluster con picos más poblados (Primero ordenamos y luego seleccionamos)
+Productos_cluster<-(sort((ClusterImportante$Datos.Product.Description)))
+Productos_cluster<-as.numeric(names(which.max(table(Productos_cluster))))
+
+
 
 #############
 #Creamos una tabla
@@ -154,7 +168,7 @@ for(i in 1:length(Vectprd)){
     # up_sellings$Datos.Customer.Code[i+length(Productos_Cliente2)]<-Producto3_Clientes$Datos.Customer.Code[i];
     # }
     #el producto con un mayor spread.rate
-    frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
+    #frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
     #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
     #excel<-data.frame(frase1,P1,P2, up_sellings$Datos.Customer.Code,)
     #excel <- excel[!duplicated(excel[,c('up_selling$Datos.Customer.Code')]),] 
@@ -167,24 +181,19 @@ for(i in 1:length(Vectprd)){
 
 
 #Cross-selling
-#if(NUmPrd < 2){
-  #for(i in 1:length(Producto1)){
-    #comprobar que empresas del producto más poblado no tienen los dos siguientes
-    #if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
-    # Cross_Selling$Datos.Customer.Code[i]<-Producto1_Clientes$Datos.Customer.Code[i];
-    # }
 
+#comprobar que empresas del producto más poblado no tienen los dos siguientes
+Clientes_Potenciales<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster)
+#clientes que ya tienen el primero hay que quitarlos de la lista
 
 
     #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
-    #excel<-data.frame(Cross_Selling$Datos.Customer.Code,)
-    #excel <- excel[!duplicated(excel[,c('Datos.Customer.Code')]),] 
-    
-    #write.xlsx(excel, "Empresas_aplicar_CrSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-    
+excel<-data.frame(Cross_Selling$Datos.Customer.Code,)
+excel <- excel[!duplicated(excel[,c('Datos.Customer.Code')]),] 
+write.xlsx(excel, "Empresas_aplicar_CrSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
     
     
-  #}
-#}
+    
+########
 
 
