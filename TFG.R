@@ -126,21 +126,55 @@ for(i in 1:numcenters)
 Productos_cluster<-(sort((ClusterImportante$Datos.Product.Description)))
 Productos_cluster<-as.numeric(names(which.max(table(Productos_cluster))))
 
+Segundo_producto<-(filter(ClusterImportante, Datos.Product.Description!=Productos_cluster))
+Segundo_producto<-as.numeric(names(which.max(table(sort(Segundo_producto$Datos.Product.Description)))))
 
-
-#############
-#Creamos una tabla
-#ClusterFinal<-data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
-                         #Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
-                         #Datos$Segment, Datos$Area, Datos$Product.Description,Datos$Base.Rate.Nominal,
-                         #Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal);
-
-#for(i in )
-#ClusterFinal <- filter(ClusterFinal, Datos.Customer.Code==UsuariosCluster);
-############
+Tercero_producto<-(filter(ClusterImportante, Datos.Product.Description!=Segundo_producto & Datos.Product.Description!=Productos_cluster))
+Tercero_producto<-as.numeric(names(which.max(table(sort(Tercero_producto$Datos.Product.Description)))))
 
 
 
+
+#Cross-selling
+
+#comprobar que empresas del producto más poblado no tienen los dos siguientes
+Clientes_Potenciales_P2<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Segundo_producto)
+Clientes_Potenciales_P3<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Tercero_producto)
+#clientes que ya tienen el primero hay que quitarlos de la lista
+
+
+    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+excel<-data.frame(Clientes_Potenciales_P2)
+
+write.xlsx(excel, "Empresas_aplicar_Cs_con_Prodcuto2.xlsx", sheetName="Sheet1",
+           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+
+excel<-data.frame(Clientes_Potenciales_P3)
+
+write.xlsx(excel, "Empresas_aplicar_Cs_con_Producto3.xlsx", sheetName="Sheet1",
+           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+
+    
+########
+
+#Up-selling
+#if(NumPrd >=2){
+#for(i in 1:length(Producto1)){
+#haria una recomendación para que los clientes que tienen
+#if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
+# up_sellings$Datos.Customer.Code[i]<-Producto2_Clientes$Datos.Customer.Code[i];
+# up_sellings$Datos.Customer.Code[i+length(Productos_Cliente2)]<-Producto3_Clientes$Datos.Customer.Code[i];
+# }
+#el producto con un mayor spread.rate
+#frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
+#mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+#excel<-data.frame(frase1,P1,P2, up_sellings$Datos.Customer.Code,)
+#excel <- excel[!duplicated(excel[,c('up_selling$Datos.Customer.Code')]),] 
+
+#write.xlsx(excel, "Empresas_aplicar_UpSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+
+
+#}
 
 
 #NumPrd variable que contiene cuantos productos parecidos hay
@@ -156,44 +190,5 @@ for(i in 1:length(Vectprd)){
   }
   #para todos los vecotores hay que hacer lo mismo
 }
-
-
-
-#Up-selling
-#if(NumPrd >=2){
-  #for(i in 1:length(Producto1)){
-  #haria una recomendación para que los clientes que tienen
-    #if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
-    # up_sellings$Datos.Customer.Code[i]<-Producto2_Clientes$Datos.Customer.Code[i];
-    # up_sellings$Datos.Customer.Code[i+length(Productos_Cliente2)]<-Producto3_Clientes$Datos.Customer.Code[i];
-    # }
-    #el producto con un mayor spread.rate
-    #frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
-    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
-    #excel<-data.frame(frase1,P1,P2, up_sellings$Datos.Customer.Code,)
-    #excel <- excel[!duplicated(excel[,c('up_selling$Datos.Customer.Code')]),] 
-    
-    #write.xlsx(excel, "Empresas_aplicar_UpSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-    
-    
-#}
-
-
-
-#Cross-selling
-
-#comprobar que empresas del producto más poblado no tienen los dos siguientes
-Clientes_Potenciales<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster)
-#clientes que ya tienen el primero hay que quitarlos de la lista
-
-
-    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
-excel<-data.frame(Cross_Selling$Datos.Customer.Code,)
-excel <- excel[!duplicated(excel[,c('Datos.Customer.Code')]),] 
-write.xlsx(excel, "Empresas_aplicar_CrSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-    
-    
-    
-########
 
 
