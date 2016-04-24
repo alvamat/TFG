@@ -1,10 +1,9 @@
-library(lattice)
 library(dplyr)
-library(fpc)
-library(Rmixmod)
 library(ggplot2)
 library(cluster)
 library(xlsx)
+library(rJava)
+library(Rmixmod)
 #Programa para la lectura de datos csv en R
 
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
@@ -22,11 +21,6 @@ Datose$Datos.Product.Description1<-as.numeric(Datose$Datos.Product.Description)
 excel<-aggregate( formula = Datos.Spread.Rate.Nominal~Datos.Product.Description+Datos.Product.Description1, 
            data = Datose,
            FUN = mean );
-
-
-
-#excel<-data.frame(excel, Datose$Datos.Product.Description)
-#excel <- excel[!duplicated(excel[,c('Datos.Product.Description')]),] 
 
 write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
@@ -123,14 +117,14 @@ for(i in 1:numcenters)
 #UsuariosCluster<-ClusterImportante$Datos.Customer.Code;
 
 #Cluster con picos más poblados (Primero ordenamos y luego seleccionamos)
-Productos_cluster<-(sort((ClusterImportante$Datos.Product.Description)))
-Productos_cluster<-as.numeric(names(which.max(table(Productos_cluster))))
+Productos_cluster<-(sort((ClusterImportante$Datos.Product.Description)));
+Productos_cluster<-as.numeric(names(which.max(table(Productos_cluster))));
 
-Segundo_producto<-(filter(ClusterImportante, Datos.Product.Description!=Productos_cluster))
-Segundo_producto<-as.numeric(names(which.max(table(sort(Segundo_producto$Datos.Product.Description)))))
+Segundo_producto<-(filter(ClusterImportante, Datos.Product.Description!=Productos_cluster));
+Segundo_producto<-as.numeric(names(which.max(table(sort(Segundo_producto$Datos.Product.Description)))));
 
-Tercero_producto<-(filter(ClusterImportante, Datos.Product.Description!=Segundo_producto & Datos.Product.Description!=Productos_cluster))
-Tercero_producto<-as.numeric(names(which.max(table(sort(Tercero_producto$Datos.Product.Description)))))
+Tercero_producto<-(filter(ClusterImportante, Datos.Product.Description!=Segundo_producto & Datos.Product.Description!=Productos_cluster));
+Tercero_producto<-as.numeric(names(which.max(table(sort(Tercero_producto$Datos.Product.Description)))));
 
 
 
@@ -138,57 +132,20 @@ Tercero_producto<-as.numeric(names(which.max(table(sort(Tercero_producto$Datos.P
 #Cross-selling
 
 #comprobar que empresas del producto más poblado no tienen los dos siguientes
-Clientes_Potenciales_P2<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Segundo_producto)
-Clientes_Potenciales_P3<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Tercero_producto)
+Clientes_Potenciales_P2<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Segundo_producto);
+Clientes_Potenciales_P3<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Tercero_producto);
 #clientes que ya tienen el primero hay que quitarlos de la lista
 
-
+Spread=Clientes_Potenciales_P2$Datos.Spread.Rate.Nominal+
     #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
-excel<-data.frame(Clientes_Potenciales_P2)
+excel2<-data.frame(Clientes_Potenciales_P2)
 
-write.xlsx(excel, "Empresas_aplicar_Cs_con_Prodcuto2.xlsx", sheetName="Sheet1",
+write.xlsx(excel2, "Empresas_aplicar_Cs_con_Prodcuto2.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
 
-excel<-data.frame(Clientes_Potenciales_P3)
+excel3<-data.frame(Clientes_Potenciales_P3)
 
-write.xlsx(excel, "Empresas_aplicar_Cs_con_Producto3.xlsx", sheetName="Sheet1",
+write.xlsx(excel3, "Empresas_aplicar_Cs_con_Producto3.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-
-    
-########
-
-#Up-selling
-#if(NumPrd >=2){
-#for(i in 1:length(Producto1)){
-#haria una recomendación para que los clientes que tienen
-#if(Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente2$Datos.Customer.Code[i] || Producto1_Clientes$Datos.Customer.Code[i]=!Productos_Cliente3$Datos.Customer.Code[i]){
-# up_sellings$Datos.Customer.Code[i]<-Producto2_Clientes$Datos.Customer.Code[i];
-# up_sellings$Datos.Customer.Code[i+length(Productos_Cliente2)]<-Producto3_Clientes$Datos.Customer.Code[i];
-# }
-#el producto con un mayor spread.rate
-#frase1<-("Se recomiendo realizar un UP-Selling des de los productos siguientes de la siguiente columna al producto que se encuentra a la tercera")
-#mostrará los dos productos siguientes ha recomendar en un arxivo xlm
-#excel<-data.frame(frase1,P1,P2, up_sellings$Datos.Customer.Code,)
-#excel <- excel[!duplicated(excel[,c('up_selling$Datos.Customer.Code')]),] 
-
-#write.xlsx(excel, "Empresas_aplicar_UpSll.xlsx", sheetName="Sheet1",col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-
-
-#}
-
-
-#NumPrd variable que contiene cuantos productos parecidos hay
-Numprd=matrix(0,nrow = length(Vectprd),ncol = 2)
-#hay que guardar en un data.frame las empresas que solo tienen
-#los productos por debajo del mejor
-for(i in 1:length(Vectprd)){
-  if(Vectprd[i]==L1[:]){#que podemos hacer para recorrer todo el vector sin saber cuantos valores hay?
-    Numprd[1,1]=Numprd[1,1]+1;
-  }
-  if(Vectprd[i]==L2[:]){
-    Numprd[1,1]=Numprd[1,1]+1;
-  }
-  #para todos los vecotores hay que hacer lo mismo
-}
 
 
