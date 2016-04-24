@@ -136,14 +136,25 @@ Clientes_Potenciales_P2<-filter(ClusterImportante, Datos.Product.Description!=Pr
 Clientes_Potenciales_P3<-filter(ClusterImportante, Datos.Product.Description!=Productos_cluster & Datos.Product.Description==Tercero_producto);
 #clientes que ya tienen el primero hay que quitarlos de la lista
 
-Spread=Clientes_Potenciales_P2$Datos.Spread.Rate.Nominal+
+
     #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+#2
+Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Productos_cluster)
+Spread=Clientes_Potenciales_P2$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+
 excel2<-data.frame(Clientes_Potenciales_P2)
 
 write.xlsx(excel2, "Empresas_aplicar_Cs_con_Prodcuto2.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
 
-excel3<-data.frame(Clientes_Potenciales_P3)
+#3
+Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Productos_cluster)
+Spread=Clientes_Potenciales_P3$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+
+
+excel3<-data.frame(Clientes_Potenciales_P3,Spread)
+
+colnames(excel3)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Total Rate Nominal Actual', 'Spread Rate Nominal Futuro')
 
 write.xlsx(excel3, "Empresas_aplicar_Cs_con_Producto3.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
