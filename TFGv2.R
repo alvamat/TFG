@@ -1,8 +1,8 @@
 library(dplyr)
 library(ggplot2)
 library(cluster)
-library(xlsx)
 library(rJava)
+library(xlsx)
 library(Rmixmod)
 
 #Qué programas queremos usar? a=Sólo repeticiones; b=sólo spread rate
@@ -52,7 +52,7 @@ clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
 clients$Datos.Product.Description<-(Datose$Datos.Product.Description1)
 
 
-clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
+clients <- filter(clients, Datos.Risk.Country=="GUATEMALA");
 
 
 
@@ -65,7 +65,7 @@ dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business,
 dat<-scale(dat)
 
 set.seed(3)
-numcenters = 5;
+numcenters = 3;
 ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
 #with(clients, pairs(dat, col=c(1:20)[ClusterKmeans$cluster])) 
 
@@ -77,10 +77,7 @@ Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
 Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
 Cluster4 <- data.frame(clients[(ClusterKmeans$cluster==4),])
 Cluster5 <- data.frame(clients[(ClusterKmeans$cluster==5),])
-Cluster6 <- data.frame(clients[(ClusterKmeans$cluster==6),])
-Cluster7 <- data.frame(clients[(ClusterKmeans$cluster==7),])
-Cluster8 <- data.frame(clients[(ClusterKmeans$cluster==8),])
-Cluster9 <- data.frame(clients[(ClusterKmeans$cluster==9),])
+
 
 clients_plot <- clients
 
@@ -96,10 +93,6 @@ ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster3,color = "black", alpha = 1)+
   geom_freqpoly(data=Cluster4,color = "blue", alpha = 1)+
   geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1)+
-  geom_freqpoly(data=Cluster6,color = "pink", alpha = 1)+
-  geom_freqpoly(data=Cluster7,color = "orange", alpha = 1)+
-  geom_freqpoly(data=Cluster8,color = "brown", alpha = 1)+
-  geom_freqpoly(data=Cluster9,color = "black", alpha = 1)+
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -132,19 +125,20 @@ Spread_Rate<-filter(excel, excel$Datos.Product.Description1==Productos_cluster);
 S=Spread_Rate$Datos.Spread.Rate.Nominal;
 
 
-P=(R*(0.7*a)+S*(0.3*b));
+P=(R*(0.65*a)+S*(0.35*b));
+Producto=Quitar;
+pob_mej=1;
 
 
 #Hacemos lo mismo para los demás productos del vector
 
 
-
+t=0;
 Productos_cluster1<-data.frame(sort((ClusterImportante$Datos.Product.Description)));
 Longitud<-(sort(table(ClusterImportante$Datos.Product.Description)));
+Long=dim(Longitud)-1;
 
-
-for(i in 1:dim(Longitud)){
-
+while(Long>=1){
     
   Productos_cluster1<-filter(Productos_cluster1,Productos_cluster1$sort..ClusterImportante.Datos.Product.Description..!=Quitar)
   Productos_cluster2<-as.numeric(names(which.max(table(Productos_cluster1))));
@@ -154,15 +148,56 @@ for(i in 1:dim(Longitud)){
   R=nrow(Rep_num)/nrow(ClusterImportante);
   
   Spread_Rate<-filter(excel, excel$Datos.Product.Description1==Productos_cluster2);
-  s=Spread_Rate$Datos.Spread.Rate.Nominal;
+  S=Spread_Rate$Datos.Spread.Rate.Nominal;
   
-  P1=(R*(0.7*a)+S*(0.3*b));
+  P1=(R*(0.65*a)+S*(0.35*b));
   
-  if(P1>=P){P=P1}
+  if(P1>=P){
+    P=P1
+    Producto=Quitar;
+    pob_mej=t;
+    }
+  
+  Long=Long-1;
+  t=t+1;
+  
   
 }
 
 
+
+#Generamos fichero
+
+if(pob_mej==1){
+  Segundo_producto<-(filter(ClusterImportante, Datos.Product.Description!=Productos_cluster));
+  Segundo_producto<-as.numeric(names(which.max(table(sort(Segundo_producto$Datos.Product.Description)))));
+  
+  Clientes_Potenciales<-filter(ClusterImportante, Datos.Product.Description!=Producto & Datos.Product.Description==Segundo_producto);
+  
+  Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Producto)
+  Spread=Clientes_Potenciales$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+  
+  
+  excel2<-data.frame(Clientes_Potenciales,Spread)
+  
+  colnames(excel2)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Total Rate Nominal Actual', 'Spread Rate Nominal Futuro')
+  
+  write.csv(excel2, file="Empresas_aplicar_Cs_v2_2pob.csv",na="NA", row.names=TRUE)
+
+}else{
+  Clientes_Potenciales<-filter(ClusterImportante, Datos.Product.Description!=Producto & Datos.Product.Description==Productos_cluster);
+  
+  Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Producto)
+  Spread=Clientes_Potenciales$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+  
+  
+  excel2<-data.frame(Clientes_Potenciales,Spread)
+  
+  colnames(excel2)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Total Rate Nominal Actual', 'Spread Rate Nominal Futuro')
+  
+  write.csv(excel2, file="Empresas_aplicar_Cs_v2_2pob.csv",na="NA", row.names=TRUE)
+  
+}
 
 
 
