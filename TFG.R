@@ -1,57 +1,50 @@
+ptm <- proc.time()
 library(dplyr)
 library(ggplot2)
 library(cluster)
-library(xlsx)
 library(rJava)
+library(xlsx)
 library(Rmixmod)
+
 #Programa para la lectura de datos csv en R
 
+#Para que país en concreto? EN MAYUS
+Pais<-"GUATEMALA"
+
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
-
-
 Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
 
-#rowsOK <- complete.cases #elimina filas con Na's
-#Datos <- Datos[rowsOK,]
+#seleccionamos aquellas variables que usaremos para juntar empresas según similitud
+clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
+                      Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
+                      Datos$Segment, Datos$Area, Datos$Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
+
+clients <- filter(clients, Datos.Risk.Country==Pais);
 
 #creamos un fichero para saber que producto tiene cada valor
-Datose<-data.frame(Datos$Product.Description, Datos$Spread.Rate.Nominal)
-Datose$Datos.Product.Description1<-as.numeric(Datose$Datos.Product.Description)
+clients[is.na(clients)] <- 0
 
-excel<-aggregate( formula = Datos.Spread.Rate.Nominal~Datos.Product.Description+Datos.Product.Description1, 
-           data = Datose,
-           FUN = mean );
+clientse<-data.frame(clients$Datos.Product.Description, clients$Datos.Spread.Rate.Nominal,clients$Datos.Product.Description)
+
+clientse$clients.Datos.Product.Description<-as.numeric(clientse$clients.Datos.Product.Description)
+clients$Datos.Product.Description<-clientse$clients.Datos.Product.Description
+
+excel<-aggregate( formula = clients.Datos.Spread.Rate.Nominal~clients.Datos.Product.Description+clients.Datos.Product.Description.1, 
+                  data = clientse,
+                  FUN = mean);
 
 write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
 
 
 
-
-#we are going to select only a few variables
-clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Business, 
-                      Datos$Industry, Datos$Customer.Type, Datos$Profit.Center.Area, 
-                      Datos$Segment, Datos$Area, Datos$Product.Description, Datos$Spread.Rate.Nominal, Datos$Total.Rate.Nominal)
-#clients <- unique(clients)
-#rowsOK <- complete.cases(clients)
-#clients <- clients[rowsOK,]
-#clients <- clients[!duplicated(clients[,c('Datos.Customer.Code')]),] no importa si nos salen clientes por
-#duplicado, lo que nos interesa son todas sus paquetes bancarios
-
+#pasamos a numérico todas las variables para poder generar los clusters
 clients$Datos.Customer.Type<-as.numeric(clients$Datos.Customer.Type)
 clients$Datos.Line.Of.Business<-as.numeric(clients$Datos.Line.Of.Business)
 clients$Datos.Industry<-as.numeric(clients$Datos.Industry)
 clients$Datos.Area<-as.numeric(clients$Datos.Area)
 clients$Datos.Profit.Center.Area<-as.numeric(clients$Datos.Profit.Center.Area)
 clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
-clients$Datos.Product.Description<-(Datose$Datos.Product.Description1)
-
-
-clients <- filter(clients, Datos.Risk.Country=="UNITED STATES");
-
-
-
-
 
 #hacemos los clusters
 dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business, 
@@ -62,11 +55,9 @@ dat<-scale(dat)
 set.seed(3)
 numcenters = 5;
 ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
-#with(clients, pairs(dat, col=c(1:20)[ClusterKmeans$cluster])) 
 
-#plotcluster(dat, clients$cluster)
-#clusplot(dat, ClusterKmeans$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
 
+#Guardamos cada cluster en una variable
 Cluster1 <- data.frame(clients[(ClusterKmeans$cluster==1),])
 Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
 Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
@@ -82,8 +73,7 @@ clients_plot <- clients
 levelsIndustry <-
   levels(clients_plot$Datos.Industry)[-50][-49][-48]
 
-
-#png(file="plot9.png")
+jpeg("imagen.jpg")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster1,color = "green", alpha = 1)+
@@ -99,7 +89,7 @@ ggplot(Cluster1,aes(Datos.Industry)) +
                    labels=levelsIndustry)+
 theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-
+dev.off
 
 #Detectar cluster más poblado
 Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==1),]))
@@ -137,26 +127,26 @@ Clientes_Potenciales_P3<-filter(ClusterImportante, Datos.Product.Description!=Pr
 #clientes que ya tienen el primero hay que quitarlos de la lista
 
 
-    #mostrará los dos productos siguientes ha recomendar en un arxivo xlm
+#mostrará los dos productos siguientes ha recomendar en un arxivo xlm
 #2
-Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Productos_cluster)
-Spread=Clientes_Potenciales_P2$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+Producto_mayor<-filter(excel, excel$clients.Datos.Product.Description==Productos_cluster)
+Spread=Clientes_Potenciales_P2$Datos.Spread.Rate.Nominal+Producto_mayor$clients.Datos.Spread.Rate
 
 excel2<-data.frame(Clientes_Potenciales_P2)
+colnames(excel2)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual', 'Spread Rate Nominal Futuro')
 
-write.xlsx(excel2, "Empresas_aplicar_Cs_con_Prodcuto2.xlsx", sheetName="Sheet1",
-           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+write.csv(excel2, file='Empresas_aplicar_Cs_con_Prodcuto2',na="NA", row.names=TRUE)
 
 #3
-Producto_mayor<-filter(excel, excel$Datos.Product.Description1==Productos_cluster)
-Spread=Clientes_Potenciales_P3$Datos.Spread.Rate.Nominal+Producto_mayor$Datos.Spread.Rate
+Producto_mayor<-filter(excel, excel$clients.Datos.Product.Description==Productos_cluster)
+Spread=Clientes_Potenciales_P3$Datos.Spread.Rate.Nominal+Producto_mayor$clients.Datos.Spread.Rate
 
 
 excel3<-data.frame(Clientes_Potenciales_P3,Spread)
 
-colnames(excel3)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Total Rate Nominal Actual', 'Spread Rate Nominal Futuro')
+colnames(excel3)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Spread Rate Nominal Futuro')
 
-write.xlsx(excel3, "Empresas_aplicar_Cs_con_Producto3.xlsx", sheetName="Sheet1",
-           col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
+write.csv(excel3, file='Empresas_aplicar_Cs_con_Prodcuto3',na="NA", row.names=TRUE)
 
 
+proc.time() - ptm
