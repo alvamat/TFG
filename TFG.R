@@ -9,7 +9,7 @@ library(Rmixmod)
 #Programa para la lectura de datos csv en R
 
 #Para que país en concreto? EN MAYUS
-Pais<-"GUATEMALA"
+Pais<-"UNITED STATES"
 
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
 Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
@@ -63,33 +63,23 @@ Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
 Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
 Cluster4 <- data.frame(clients[(ClusterKmeans$cluster==4),])
 Cluster5 <- data.frame(clients[(ClusterKmeans$cluster==5),])
-Cluster6 <- data.frame(clients[(ClusterKmeans$cluster==6),])
-Cluster7 <- data.frame(clients[(ClusterKmeans$cluster==7),])
-Cluster8 <- data.frame(clients[(ClusterKmeans$cluster==8),])
-Cluster9 <- data.frame(clients[(ClusterKmeans$cluster==9),])
 
 clients_plot <- clients
 
 levelsIndustry <-
   levels(clients_plot$Datos.Industry)[-50][-49][-48]
 
-jpeg("imagen.jpg")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
-  geom_freqpoly(data=Cluster1,color = "green", alpha = 1)+
-  geom_freqpoly(data=Cluster2,color = "red", alpha = 1)+
-  geom_freqpoly(data=Cluster3,color = "black", alpha = 1)+
-  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1)+
-  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1)+
-  geom_freqpoly(data=Cluster6,color = "pink", alpha = 1)+
-  geom_freqpoly(data=Cluster7,color = "orange", alpha = 1)+
-  geom_freqpoly(data=Cluster8,color = "brown", alpha = 1)+
-  geom_freqpoly(data=Cluster9,color = "black", alpha = 1)+
+  geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster2,color = "red", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster3,color = "black", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1, binwidth = 0.05)+
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
-theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-dev.off
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggsave("Histogramav1.png")
 
 #Detectar cluster más poblado
 Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==1),]))
@@ -101,6 +91,7 @@ for(i in 1:numcenters)
    {
   Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==i),]));
   ClusterImportante<-data.frame(clients[(ClusterKmeans$cluster==i),]);
+  cnum<-i;
   }
 }
 
@@ -136,6 +127,7 @@ excel2<-data.frame(Clientes_Potenciales_P2)
 colnames(excel2)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual', 'Spread Rate Nominal Futuro')
 
 write.csv(excel2, file='Empresas_aplicar_Cs_con_Prodcuto2',na="NA", row.names=TRUE)
+write.csv(Producto_mayor, file='productov1.2',na="NA", row.names=TRUE)
 
 #3
 Producto_mayor<-filter(excel, excel$clients.Datos.Product.Description==Productos_cluster)
@@ -147,6 +139,7 @@ excel3<-data.frame(Clientes_Potenciales_P3,Spread)
 colnames(excel3)=c('País','Cliente','Business','Industria','Tipo de Cliente','Area de provecho','Segmento','Area','Descripcion del producto','Spread Rate Nominal Actual','Spread Rate Nominal Futuro')
 
 write.csv(excel3, file='Empresas_aplicar_Cs_con_Prodcuto3',na="NA", row.names=TRUE)
+write.csv(Producto_mayor, file='productov1.3',na="NA", row.names=TRUE)
 
 
 proc.time() - ptm
