@@ -6,10 +6,12 @@ library(rJava)
 library(xlsx)
 library(Rmixmod)
 
-#Programa para la lectura de datos csv en R
+
 
 #Para que país en concreto? EN MAYUS
-Pais<-"UNITED STATES"
+Pais<-"ARGENTINA"
+
+#Programa para la lectura de datos csv en R
 
 #Empezamos leyendo el documento del cual vamos a extraer los datos:
 Datos<-read.csv("PublicUSefulBankDataFurtherReduced.txt",sep=",",header=TRUE)
@@ -21,9 +23,9 @@ clients <- data.frame(Datos$Risk.Country,Datos$Customer.Code, Datos$Line.Of.Busi
 
 clients <- filter(clients, Datos.Risk.Country==Pais);
 
-#creamos un fichero para saber que producto tiene cada valor
 clients[is.na(clients)] <- 0
 
+#creamos un fichero para saber que producto tiene cada valor
 clientse<-data.frame(clients$Datos.Product.Description, clients$Datos.Spread.Rate.Nominal,clients$Datos.Product.Description)
 
 clientse$clients.Datos.Product.Description<-as.numeric(clientse$clients.Datos.Product.Description)
@@ -38,13 +40,13 @@ write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
 
 
 
-#pasamos a numérico todas las variables para poder generar los clusters
 clients$Datos.Customer.Type<-as.numeric(clients$Datos.Customer.Type)
 clients$Datos.Line.Of.Business<-as.numeric(clients$Datos.Line.Of.Business)
 clients$Datos.Industry<-as.numeric(clients$Datos.Industry)
 clients$Datos.Area<-as.numeric(clients$Datos.Area)
 clients$Datos.Profit.Center.Area<-as.numeric(clients$Datos.Profit.Center.Area)
 clients$Datos.Segment<-as.numeric(clients$Datos.Segment)
+
 
 #hacemos los clusters
 dat<-select(clients,Datos.Customer.Type, Datos.Line.Of.Business, 
@@ -57,29 +59,32 @@ numcenters = 5;
 ClusterKmeans<-kmeans(dat,numcenters,iter.max=10,algorithm = "Forgy")
 
 
-#Guardamos cada cluster en una variable
 Cluster1 <- data.frame(clients[(ClusterKmeans$cluster==1),])
 Cluster2 <- data.frame(clients[(ClusterKmeans$cluster==2),])
 Cluster3 <- data.frame(clients[(ClusterKmeans$cluster==3),])
 Cluster4 <- data.frame(clients[(ClusterKmeans$cluster==4),])
 Cluster5 <- data.frame(clients[(ClusterKmeans$cluster==5),])
 
+
 clients_plot <- clients
 
 levelsIndustry <-
   levels(clients_plot$Datos.Industry)[-50][-49][-48]
 
+pab1 <- "Histograma"
+pab2 <- ".png"
+plot <- paste(pab1, Pais, pab3,sep="")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
-  geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster2,color = "red", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster3,color = "black", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster2,color = "red", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster3,color = "black", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1, binwidth = 0.5)+
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave("Histogramav1.png")
+ggsave(plot)
 
 #Detectar cluster más poblado
 Vectormayor<-nrow(data.frame(clients[(ClusterKmeans$cluster==1),]))

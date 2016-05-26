@@ -6,12 +6,10 @@ library(rJava)
 library(xlsx)
 library(Rmixmod)
 
-#Qué programas queremos usar? a=Sólo repeticiones; b=sólo spread rate
-a=1;
-b=1;
+
 
 #Para que país en concreto? EN MAYUS
-Pais<-"UNITED STATES"
+Pais<-"ARGENTINA"
 
 #Programa para la lectura de datos csv en R
 
@@ -39,7 +37,6 @@ excel<-aggregate( formula = clients.Datos.Spread.Rate.Nominal~clients.Datos.Prod
 
 write.xlsx(excel, "Productos_Bancarios.xlsx", sheetName="Sheet1",
            col.names=TRUE, row.names=TRUE, append=FALSE, showNA=TRUE)
-
 
 
 
@@ -74,19 +71,21 @@ clients_plot <- clients
 levelsIndustry <-
   levels(clients_plot$Datos.Industry)[-50][-49][-48]
 
-
-
+pab1 <- "Histograma"
+pab2 <- ".png"
+plot <- paste(pab1, Pais, pab3,sep="")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
-  geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster2,color = "red", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster3,color = "black", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1, binwidth = 0.05)+
-  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1, binwidth = 0.05)+
+  geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster2,color = "red", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster3,color = "black", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster4,color = "blue", alpha = 1, binwidth = 0.5)+
+  geom_freqpoly(data=Cluster5,color = "yellow", alpha = 1, binwidth = 0.5)+
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave("Histogramav2.png")
+ggsave(plot)
+
 
 for(i in 1:1){
   file<-toString(i)

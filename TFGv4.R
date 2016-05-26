@@ -71,7 +71,9 @@ clients_plot <- clients
 levelsIndustry <-
   levels(clients_plot$Datos.Industry)[-50][-49][-48]
 
-
+pab1 <- "Histograma"
+pab2 <- ".png"
+plot <- paste(pab1, Pais, pab3,sep="")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.5)+
@@ -82,7 +84,7 @@ ggplot(Cluster1,aes(Datos.Industry)) +
   scale_x_discrete(breaks=1:length(levelsIndustry),
                    labels=levelsIndustry)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave("Histogramav3.png")
+ggsave(plot)
 
 
 
@@ -220,15 +222,20 @@ for(i in 1:numcenters){
 
 
 Cluster1n<-Cluster1[,-2]
+Cluster1n$Datos.Risk.Country<-as.numeric(Cluster1n$Datos.Risk.Country)
 Cluster2n<-Cluster2[,-2]
+Cluster2n$Datos.Risk.Country<-as.numeric(Cluster2n$Datos.Risk.Country)
 Cluster3n<-Cluster3[,-2]
+Cluster3n$Datos.Risk.Country<-as.numeric(Cluster3n$Datos.Risk.Country)
 Cluster4n<-Cluster4[,-2]
+Cluster4n$Datos.Risk.Country<-as.numeric(Cluster4n$Datos.Risk.Country)
 Cluster5n<-Cluster5[,-2]
+Cluster5n$Datos.Risk.Country<-as.numeric(Cluster5n$Datos.Risk.Country)
 
 train=rbind(Cluster1n,Cluster2n,Cluster3n, Cluster4n,Cluster5n)
 
 # Class labels vector (attached to each class instance)
-cl=factor(c(rep("A",nrow(Cluster1n)),rep("B",nrow(Cluster2n)),rep("C",nrow(Cluster3n)),rep("D",nrow(Cluster4n)),rep("E",nrow(Cluster5n))))
+cl=factor(c(rep(1,nrow(Cluster1n)),rep(2,nrow(Cluster2n)),rep(3,nrow(Cluster3n)),rep(4,nrow(Cluster4n)),rep(5,nrow(Cluster5n))))
 
 # The object to be classified
 test=c(1,
@@ -246,12 +253,18 @@ test=c(1,
 library(class)
 
 # call knn() and get its summary
-summary(knn(train, test, cl, k = 1))
+resultado<-(knn(train, test, cl, k = 1))
+attributes(.Last.value)
 
+pab1 <- "producto para"
+pab2 <- resultado
+union3 <- paste(pab1, Pais, pab2,sep="_")
+nuevo<-read.csv(file=union3,sep=",", header=TRUE)
 
-
-
-
+pab1 <- "Al nuevo cliente se le recomienda el C-S del Cluster"
+pab2 <- resultado
+union4 <- paste(pab1, pab2,sep="_")
+write.csv(nuevo, file=union4, na="NA", row.names=TRUE)
 
 
 proc.time() - ptm
