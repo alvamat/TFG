@@ -73,7 +73,7 @@ levelsIndustry <-
 
 pab1 <- "Histograma"
 pab2 <- ".png"
-plot <- paste(pab1, Pais, pab3,sep="")
+plot <- paste(pab1, Pais, pab2,sep="")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.5)+

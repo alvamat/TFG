@@ -73,7 +73,7 @@ levelsIndustry <-
 
 pab1 <- "Histograma"
 pab2 <- ".png"
-plot <- paste(pab1, Pais, pab3,sep="")
+plot <- paste(pab1, Pais, pab2,sep="")
 
 ggplot(Cluster1,aes(Datos.Industry)) +
   geom_freqpoly(data=Cluster1,color = "green", alpha = 1, binwidth = 0.5)+
@@ -147,4 +147,4 @@ write.csv(excel3, file='Empresas_aplicar_Cs_con_Prodcuto3',na="NA", row.names=TR
 write.csv(Producto_mayor, file='productov1.3',na="NA", row.names=TRUE)
 
 
-proc.time() - ptm
+v1<-proc.time() - ptm
